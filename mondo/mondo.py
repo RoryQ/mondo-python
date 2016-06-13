@@ -72,7 +72,7 @@ class Account(object):
 
     def list_webhooks(self):
         if self.__client:
-            return self.__client.list_webhooks(account_id=self)
+            return self.__client.list_webhooks(account_id=self.id)
 
     def register_webhook(self, url: str):
         if self.__client:
