@@ -41,21 +41,30 @@ class MondoClient(MondoApi):
 
         return Balance(generated_at=datetime.datetime.now(), **response)
 
-    async def list_transactions_async(self, account_id: str,
-                                      since: datetime.datetime = None,
-                                      before: datetime.datetime = None,
-                                      limit: int = None):
+    def _list_transactions_payload(self, account_id: str,
+                                   since: datetime.datetime = None,
+                                   before: datetime.datetime = None,
+                                   limit: int = None):
         params = {
             'account_id': account_id,
             'expand[]': 'merchant'
         }
 
         if since:
-            params.update({'since': since.isoformat('T')+'Z'})
+            params.update({'since': since.isoformat('T') + 'Z'})
         if before:
-            params.update({'before': before.isoformat('T')+'Z'})
+            params.update({'before': before.isoformat('T') + 'Z'})
         if limit:
             params.update({'limit': str(limit)})
+
+        return params
+
+    async def list_transactions_async(self, account_id: str,
+                                      since: datetime.datetime = None,
+                                      before: datetime.datetime = None,
+                                      limit: int = None):
+
+        params = self._list_transactions_payload(account_id, since, before, limit)
 
         content = await self._make_async_request('/transactions', params)
 
@@ -78,17 +87,7 @@ class MondoClient(MondoApi):
         :return: A list of Transaction objects
         """
 
-        params = {
-            'account_id': account_id,
-            'expand[]': 'merchant'
-        }
-
-        if since:
-            params.update({'since': since.isoformat('T')+'Z'})
-        if before:
-            params.update({'before': before.isoformat('T')+'Z'})
-        if limit:
-            params.update({'limit': limit})
+        params = self._list_transactions_payload(account_id, since, before, limit)
 
         response = self._make_request('/transactions', params)
 
