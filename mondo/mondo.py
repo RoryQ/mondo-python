@@ -269,3 +269,28 @@ class Webhook(object):
         return "<Webhook {} {}>".format(
             self.id, self.url
         )
+
+
+class BasicFeedItem(object):
+
+    def __init__(self, title, image_url, url=None, body=None,
+                 title_color=None, background_color=None, body_color=None):
+        self.type = 'basic'
+        self.url = url
+
+        # params
+        self.title = title
+        self.image_url = image_url
+        self.body = body
+        self.title_color = title_color
+        self.background_color = background_color
+        self.body_color = body_color
+
+    def __repr__(self):
+        return "<BasicFeedItem {}>".format(self.title)
+
+    @property
+    def params(self):
+        return {"params[{}]".format(key): value
+                for key, value in self.__dict__.items()
+                if key not in ('type', 'url') and value is not None}

@@ -47,6 +47,7 @@ class MondoClient(MondoApi):
                                       limit: int = None):
         params = {
             'account_id': account_id,
+            'expand[]': 'merchant'
         }
 
         if since:
@@ -117,6 +118,27 @@ class MondoClient(MondoApi):
 
         return Transaction(client=self, **response['transaction'])
 
+    async def annotate_transaction_async(self, transaction_id: str, metadata: dict) -> Transaction:
+        """
+        Add metadata to a transaction.
+        To delete metadata keys, update the key with an empty value
+
+        :param transaction_id:
+        :param metadata: a dictionary of metadata
+        :return: a Transaction object
+        """
+        metadata = {'metadata[{}]'.format(key): value
+                    for key, value in metadata.items()}
+
+        response = self._make_async_request(
+            '/transactions/{}'.format(transaction_id),
+            method='PATCH',
+            data=metadata
+        )
+
+        return Transaction(client=self, **response['transaction'])
+
+
     def annotate_transaction(self, transaction_id: str, metadata: dict) -> Transaction:
         """
         Add metadata to a transaction.
@@ -145,7 +167,18 @@ class MondoClient(MondoApi):
         :param feed_item:
         :return:
         """
-        raise NotImplementedError
+        payload = {
+                'account_id': account_id,
+                'type': feed_item.type,
+                'url': feed_item.url
+            }
+        payload.update(feed_item.params)
+        self._make_request(
+            method='POST',
+            url='feed',
+            data=payload)
+
+        return {}
 
     def list_webhooks(self, account_id: str) -> List[Webhook]:
         """
